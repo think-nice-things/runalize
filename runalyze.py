@@ -47,7 +47,7 @@ def verify_upload(queue_id, token, silent=False):
 
         if response.status_code == 200 or response.status_code == 201:
             verification_data = response.json()
-            if verification_data.get("status") == "successfully imported":
+            if verification_data.get("status") == f"successfully imported ({response.status_code})":
                 activity_id = verification_data.get("activity_id")
                 activity_url = f"https://runalyze.com/activity/{activity_id}"
                 if not silent:
@@ -86,15 +86,18 @@ def upload_file(file_path, token, dryrun=False, silent=False):
 
             upload_data = response.json()
             if not silent:
-                print(f"Successfully uploaded: {file_path}")
+                print(f"Successfully uploaded: {file_path} ({response.status_code})")
                 print(f"Response: {upload_data}")
             
-            # Verify upload using queue_id
-            queue_id = upload_data.get("queue_id")
-            if queue_id:
-                verify_upload(queue_id, token, silent=silent)
-            else:
-                print(f"No queue_id returned. Unable to verify upload.")
+            # can't verify upload using queue_id immediately after upload
+            # since it takes some time for the file to be processed
+            #
+            # # Verify upload using queue_id
+            # queue_id = upload_data.get("queue_id")
+            # if queue_id:
+            #     verify_upload(queue_id, token, silent=silent)
+            # else:
+            #     print(f"No queue_id returned. Unable to verify upload.")
 
         else:
             print(f"Failed to upload {file_path}. HTTP Status Code: {response.status_code}")
